@@ -1,0 +1,279 @@
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: capabilities.3scale.net/v1beta1
+  kind: Product
+  metadata:
+    name: inventario.grsinkwt
+  spec:
+    name: "APIs Externo"
+    systemName: inventario
+    description: Product of apis for external use
+    mappingRules:
+    - httpMethod: GET
+      pattern: "/"
+      metricMethodRef: hits
+      increment: 1
+      last: false
+    - httpMethod: PUT
+      pattern: "/"
+      metricMethodRef: hits
+      increment: 1
+      last: false
+    - httpMethod: POST
+      pattern: "/"
+      metricMethodRef: hits
+      increment: 1
+      last: false
+    metrics:
+      hits:
+        friendlyName: Hits
+        unit: hit
+        description: Number of API hits
+    methods: {}
+    policies:
+    - name: upstream_connection
+      version: builtin
+      configuration:
+        send_timeout: 300
+        connect_timeout: 300
+        read_timeout: 300
+      enabled: true
+    - name: apicast
+      version: builtin
+      configuration: {}
+      enabled: true
+    applicationPlans:
+      teste:
+        name: "demo/Digital"
+        appsRequireApproval: false
+        trialPeriod: 0
+        setupFee: 0.0
+        custom: false
+        state: published
+        costMonth: 0.0
+        pricingRules: []
+        limits:
+        - period: day
+          value: 500
+          metricMethodRef:
+            systemName: hits
+            backend: backend_device_prodcution
+      demo_uranet:
+        name: "demo/Uranet"
+        appsRequireApproval: false
+        trialPeriod: 0
+        setupFee: 0.0
+        custom: false
+        state: published
+        costMonth: 0.0
+        pricingRules: []
+        limits:
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: hits
+            backend: backend_inventory_prodcution
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: cities
+            backend: backend_inventory_prodcution
+      demo_portal_paq:
+        name: "demo/Portal PAQ"
+        appsRequireApproval: false
+        trialPeriod: 0
+        setupFee: 0.0
+        custom: false
+        state: published
+        costMonth: 0.0
+        pricingRules: []
+        limits:
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: hits
+            backend: backend_inventory_prodcution
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: cities
+            backend: backend_inventory_prodcution
+      demo_visium:
+        name: "demo/Visium"
+        appsRequireApproval: false
+        trialPeriod: 0
+        setupFee: 0.0
+        custom: false
+        state: published
+        costMonth: 0.0
+        pricingRules: []
+        limits:
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: hits
+            backend: backend_device_prodcution
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: cities
+            backend: backend_inventory_prodcution
+        - period: eternity
+          value: 0
+          metricMethodRef:
+            systemName: hits
+            backend: backend_inventory_prodcution
+    backendUsages:
+      backend_inventory_prodcution:
+        path: "/inventory"
+      backend_device_prodcution:
+        path: "/device"
+      backend_wsrestaggregators_prodcution:
+        path: "/aggregators"
+    deployment:
+      apicastHosted:
+        authentication:
+          oidc:
+            issuerType: keycloak
+            issuerEndpoint: https://3scale-apis:02b97501-01f8-401f-90a6-fdd1e577e4f8@sso-demo-sso-prod.apps.ocp.example.com.br/auth/realms/3scale-apis
+            jwtClaimWithClientID: azp
+            jwtClaimWithClientIDType: plain
+            authenticationFlow:
+              standardFlowEnabled: true
+              implicitFlowEnabled: false
+              serviceAccountsEnabled: false
+              directAccessGrantsEnabled: false
+            credentials: headers
+            security:
+              hostHeader: ''
+              secretToken: Shared_secret_sent_from_proxy_to_API_backend_269f2c3e8f4cd6e3
+            gatewayResponse:
+              errorStatusAuthFailed: 403
+              errorHeadersAuthFailed: text/plain; charset=us-ascii
+              errorAuthFailed: Authentication failed
+              errorStatusAuthMissing: 403
+              errorHeadersAuthMissing: text/plain; charset=us-ascii
+              errorAuthMissing: Authentication parameters missing
+              errorStatusNoMatch: 404
+              errorHeadersNoMatch: text/plain; charset=us-ascii
+              errorNoMatch: No Mapping Rule matched
+              errorStatusLimitsExceeded: 429
+              errorHeadersLimitsExceeded: text/plain; charset=us-ascii
+              errorLimitsExceeded: Usage limit exceeded
+- apiVersion: capabilities.3scale.net/v1beta1
+  kind: Backend
+  metadata:
+    name: backend.inventory.prodcution.pgwntezo
+  spec:
+    name: Backend inventory production
+    systemName: backend_inventory_prodcution
+    privateBaseURL: http://inventory.production.svc.cluster.local:8080
+    description: O backend do microsserviço inventory no ambiente de produção
+    mappingRules:
+    - httpMethod: GET
+      pattern: "/cities"
+      metricMethodRef: hits
+      increment: 1
+      last: false
+    - httpMethod: POST
+      pattern: "/"
+      metricMethodRef: hits
+      increment: 1
+      last: false
+    - httpMethod: GET
+      pattern: "/policies"
+      metricMethodRef: policies_list
+      increment: 1
+      last: false
+    - httpMethod: GET
+      pattern: "/policies/{uuid}$"
+      metricMethodRef: policies_details
+      increment: 1
+      last: false
+    - httpMethod: GET
+      pattern: "/products"
+      metricMethodRef: products_list
+      increment: 1
+      last: false
+    - httpMethod: GET
+      pattern: "/products/{uuid}$"
+      metricMethodRef: products_details
+      increment: 1
+      last: false
+    metrics:
+      hits:
+        friendlyName: Hits
+        unit: hit
+        description: Number of API hits
+      cities:
+        friendlyName: Get list of cities
+        unit: hit
+        description: Get list of cities
+      policies_list:
+        friendlyName: Consulta lista policies
+        unit: hit
+        description: 'Obtém uma lista de Policies podendo filtrar por: standardType, name, description, clientClassName'
+      policies_details:
+        friendlyName: Consulta detalhes da policy
+        unit: hit
+        description: Obtém detalhes de uma Policy através do uuid
+      products_list:
+        friendlyName: Consulta lista products
+        unit: hit
+        description: Obtém uma lista de Produtos
+      products_details:
+        friendlyName: Consulta detalhes do products
+        unit: hit
+        description: Obtém detalhes de um Product através do uuid
+- apiVersion: capabilities.3scale.net/v1beta1
+  kind: Backend
+  metadata:
+    name: backend.device.prodcution.eldnmpsb
+  spec:
+    name: Backend device production
+    systemName: backend_device_prodcution
+    privateBaseURL: http://device.production.svc.cluster.local:8080
+    description: O backend do microsserviço Device no ambiente de produção
+    mappingRules: []
+    metrics:
+      hits:
+        friendlyName: Hits
+        unit: hit
+        description: Number of API hits
+    methods: {}
+- apiVersion: capabilities.3scale.net/v1beta1
+  kind: Backend
+  metadata:
+    name: backend.wsrestaggregators.prodcution.uyecbqmv
+  spec:
+    name: Backend wsrestaggregators production
+    systemName: backend_wsrestaggregators_prodcution
+    privateBaseURL: http://wsrestaggregatorsexamplecombr.production.svc.cluster.local:8080
+    description: O backend do microsserviço Wsrestaggregators no ambiente de produção
+    mappingRules:
+    - httpMethod: GET
+      pattern: "/cities"
+      metricMethodRef: cities
+      increment: 1
+      last: true
+    - httpMethod: GET
+      pattern: "/cmts"
+      metricMethodRef: cmts
+      increment: 1
+      last: false
+    metrics:
+      hits:
+        friendlyName: Hits
+        unit: hit
+        description: Number of API hits
+      cities:
+        friendlyName: Get list of cities
+        unit: hit
+        description: Get list of cities
+      cmts:
+        friendlyName: Get list of CMTS
+        unit: hit
+        description: Get list of CMTS
+
